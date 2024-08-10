@@ -1,19 +1,36 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getStudents } from '../../Apis/Student.apis';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { deleteStudent, getStudents } from '../../Apis/Student.apis';
 import { IStudent } from '../../Types/Students.types';
-import { useSearchParams } from 'react-router-dom';
-import { useQueryString } from '../../utils/utils';
 import Spinner from '../../Components/Spinner/Spinner';
+import { useNavigate } from 'react-router-dom';
 
 
 function List() {
+    const navigate = useNavigate();
+
+
     const results = useQuery({
         queryKey: ['students'],
         queryFn: () => getStudents(),
     });
 
     const { data, error, isLoading } = results;
+
+
+
+    const deleteStudentMutation = useMutation({
+        mutationFn: (id: string | number) => deleteStudent(id),
+        onSuccess: (_, id) => {
+            alert(`Xóa tài khoản thành công với id = ${id}!`);
+        }
+    })
+
+    const handleDelete = (id: number | string) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa sinh viên này không?')) {
+            deleteStudentMutation.mutate(id);
+        }
+    };
 
     if (isLoading) return <Spinner />;
     if (error) return <p>Error: {(error as Error).message}</p>;
@@ -41,7 +58,12 @@ function List() {
                             </td>
                             <td>
                                 <button className="btn btn-warning btn-sm mx-2">Sửa</button>
-                                <button className="btn btn-danger btn-sm">Xóa</button>
+                                <button
+                                    className="btn btn-danger ml-2"
+                                    onClick={() => handleDelete(student.id)}
+                                >
+                                    Xóa
+                                </button>
                             </td>
                         </tr>
                     ))}

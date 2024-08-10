@@ -53,8 +53,7 @@ app.post('/students', async (req, res) => {
   }
 
   try {
-    // Thêm dữ liệu vào CSDL
-    const newStudent = await Student.create({
+    await Student.create({
       first_name,
       last_name,
       email,
@@ -71,6 +70,32 @@ app.post('/students', async (req, res) => {
     res.status(500).send({
       error: 'Đã xảy ra lỗi khi thêm sinh viên'
     });
+  }
+});
+
+app.delete('/students/:id', async (req, res) => {
+  const { id } = req.params; // Lấy ID từ URL
+
+  // Chuyển đổi ID từ string thành number nếu ID là kiểu số trong cơ sở dữ liệu
+  const studentId = parseInt(id, 10);
+
+  // Kiểm tra xem ID có phải là số hợp lệ không
+  if (isNaN(studentId)) {
+    return res.status(400).json({ error: 'ID không hợp lệ' });
+  }
+
+  try {
+    const result = await Student.destroy({
+      where: { id: studentId } // Sử dụng studentId để tìm và xóa sinh viên
+    });
+
+    if (result) {
+      res.status(200).json({ message: 'Sinh viên đã được xóa thành công' });
+    } else {
+      res.status(404).json({ error: 'Sinh viên không tồn tại' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi khi xóa sinh viên: ' + error.message });
   }
 });
 

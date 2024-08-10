@@ -1,26 +1,53 @@
 import React, { useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { IStudent } from '../../Types/Students.types';
-import { addStudent } from '../../Apis/Student.apis';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { addStudent } from '../../Apis/Student.apis';
+
+type IStudent = {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    address: string;
+    password: string;
+};
+
+type FormStateType = Omit<IStudent, "id">;
+
+const initialFormState: FormStateType = {
+    first_name: '',
+    last_name: '',
+    email: '',
+    address: '',
+    password: '',
+};
 
 const Create: React.FC = () => {
-    const { register, handleSubmit, setValue, formState: { errors }, reset, setError } = useForm<IStudent>();
+    const { register, handleSubmit, formState: { errors }, reset, setError } = useForm<FormStateType>({
+        defaultValues: initialFormState,
+    });
     const navigate = useNavigate();
 
-    const onSubmit: SubmitHandler<IStudent> = async (data) => {
-        try {
-            await addStudent(data);
+    const { mutate } = useMutation({
+        mutationFn: (data: FormStateType) => {
+            return addStudent(data);
+        },
+        onSuccess: () => {
+            // Xóa bộ nhớ đệm dữ liệu sinh viên sau khi thêm mới thành công
             reset();
             navigate('/student/list');
             alert("Thêm mới thành công");
-
-        } catch (error) {
+        },
+        onError: (error: any) => {
             console.error('Lỗi khi gửi dữ liệu:', error);
             setError('email', { message: 'Có lỗi xảy ra khi gửi dữ liệu' });
         }
-    };
+    });
 
+    const onSubmit: SubmitHandler<FormStateType> = (data) => {
+        mutate(data);
+    };
 
     return (
         <div className="container mt-5">
