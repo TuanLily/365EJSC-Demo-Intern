@@ -3,6 +3,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { addStudent } from '../../Apis/Student.apis';
+import { toast } from 'react-toastify';
 
 type IStudent = {
     id: number;
@@ -34,14 +35,16 @@ const Create: React.FC = () => {
             return addStudent(data);
         },
         onSuccess: () => {
-            // Xóa bộ nhớ đệm dữ liệu sinh viên sau khi thêm mới thành công
             reset();
-            navigate('/student/list');
-            alert("Thêm mới thành công");
+            toast.success("Thêm mới thành công", {
+                autoClose: 3000,
+                onClose: () => navigate('/student/list') // Điều hướng sau khi toast đóng
+            });
         },
         onError: (error: any) => {
             console.error('Lỗi khi gửi dữ liệu:', error);
             setError('email', { message: 'Có lỗi xảy ra khi gửi dữ liệu' });
+            toast.error("Có lỗi xảy ra khi gửi dữ liệu");
         }
     });
 

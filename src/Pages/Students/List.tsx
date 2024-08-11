@@ -3,26 +3,31 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { deleteStudent, getStudents } from '../../Apis/Student.apis';
 import { IStudent } from '../../Types/Students.types';
 import Spinner from '../../Components/Spinner/Spinner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import Pagination from '@mui/material/Pagination';
 
 
 function List() {
     const navigate = useNavigate();
-
+    const [searchParams, setSearchParams] = useSearchParams();
+    const page = searchParams.get('page') || '1';
+    const limit = searchParams.get('limit') || '10';
 
     const results = useQuery({
-        queryKey: ['students'],
-        queryFn: () => getStudents(),
+        queryKey: ['students', page, limit],
+        queryFn: () => getStudents({ page, limit }),
     });
-
     const { data, error, isLoading } = results;
-
-
+    const totalPages = data?.data.totalPages || 1;
 
     const deleteStudentMutation = useMutation({
         mutationFn: (id: string | number) => deleteStudent(id),
         onSuccess: (_, id) => {
-            alert(`Xóa tài khoản thành công với id = ${id}!`);
+
+            toast.success(`Xóa tài khoản thành công với id = ${id}!`, {
+                autoClose: 3000,
+            })
         }
     })
 
@@ -31,6 +36,10 @@ function List() {
             deleteStudentMutation.mutate(id);
         }
     };
+
+    const handleEdit = (id: string | number) => {
+        navigate(`/student/edit/${id}`);
+    }
 
     if (isLoading) return <Spinner />;
     if (error) return <p>Error: {(error as Error).message}</p>;
@@ -48,7 +57,7 @@ function List() {
                     </tr>
                 </thead>
                 <tbody>
-                    {data?.data.map((student: IStudent, index: number) => (
+                    {data?.data.students.map((student: IStudent, index: number) => (
                         <tr key={student.id}>
                             <th scope="row">{index + 1}</th>
                             <td>{student.first_name} {student.last_name}</td>
@@ -57,7 +66,7 @@ function List() {
                                 {student.address}
                             </td>
                             <td>
-                                <button className="btn btn-warning btn-sm mx-2">Sửa</button>
+                                <button className="btn btn-warning btn-sm mx-2" onClick={() => handleEdit(student.id)}>Sửa</button>
                                 <button
                                     className="btn btn-danger ml-2"
                                     onClick={() => handleDelete(student.id)}
@@ -69,6 +78,18 @@ function List() {
                     ))}
                 </tbody>
             </table>
+            <div className="d-flex justify-content-center">
+                <Pagination
+                    count={totalPages || 1}
+                    page={parseInt(page, 10)}
+                    onChange={(event, value) => {
+                        setSearchParams({ page: value.toString(), limit });
+                    }}
+                    color='primary'
+                />
+            </div>
+
+
         </>
     );
 }

@@ -22,16 +22,48 @@ const validateEmail = (email) => {
 
 // Routes
 app.get('/students', async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
   try {
-    const students = await Student.findAll({
+    const { count, rows } = await Student.findAndCountAll({
       attributes: ['id', 'first_name', 'last_name', 'email', 'address', 'created_at', 'updated_at'],
-      order: [['id', 'DESC']]
+      order: [['id', 'DESC']],
+      limit: limit,
+      offset: offset
     });
-    res.json(students);
+
+    res.json({
+      students: rows,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit)
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+// Lấy thông tin sinh viên theo ID
+app.get('/students/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const student = await Student.findByPk(id, {
+      attributes: ['id', 'first_name', 'last_name', 'email', 'address', 'created_at', 'updated_at']
+    });
+
+    if (student) {
+      res.json(student);
+    } else {
+      res.status(404).json({ error: 'Sinh viên không tồn tại' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 app.post('/students', async (req, res) => {
   const { first_name, last_name, email, address, password } = req.body;
@@ -70,6 +102,31 @@ app.post('/students', async (req, res) => {
     res.status(500).send({
       error: 'Đã xảy ra lỗi khi thêm sinh viên'
     });
+  }
+});
+
+app.patch('/students/:id', async (req, res) => {
+  const { id } = req.params;
+  const { first_name, last_name, email, address, password } = req.body;
+
+  try {
+    const student = await Student.findByPk(id);
+
+    if (student) {
+      await student.update({
+        first_name,
+        last_name,
+        email,
+        address,
+        password // Lưu ý: Nếu có mã hóa mật khẩu, hãy thực hiện ở đây
+      });
+
+      res.json({ message: 'Thông tin sinh viên đã được cập nhật thành công' });
+    } else {
+      res.status(404).json({ error: 'Sinh viên không tồn tại' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

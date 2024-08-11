@@ -8,6 +8,12 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.min.js'
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'react-toastify/dist/ReactToastify.css';
+
+
+
+import { ToastContainer } from 'react-toastify';
+
 import { QueryClientProvider } from '@tanstack/react-query';
 import queryClient from './Config/QueryClient';
 
@@ -20,6 +26,7 @@ root.render(
     <Router>
       <QueryClientProvider client={queryClient}>
         <App />
+        <ToastContainer />
       </QueryClientProvider>
     </Router>
   </React.StrictMode>
