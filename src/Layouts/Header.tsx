@@ -46,7 +46,6 @@ const Header = () => {
                     </NavLink>
                 </li>
             </ul>
-            {/* Các mục khác trong menu */}
             {user ? (
                 <div className="dropdown">
                     <button

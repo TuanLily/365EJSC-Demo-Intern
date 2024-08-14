@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const createHttpInstance = (): AxiosInstance => {
     const instance: AxiosInstance = axios.create({
@@ -25,8 +26,11 @@ const createHttpInstance = (): AxiosInstance => {
     instance.interceptors.response.use(
         (response) => response,
         (error) => {
-            if (error.response?.status === 401) {
-                // TODO: Có thể điều hướng đến trang login hoặc trang 404 khi token k hợp lệ
+            const navigate = useNavigate(); 
+            if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                // Token hết hạn hoặc không hợp lệ
+                localStorage.removeItem('accessToken'); 
+                navigate('/login');
             }
             return Promise.reject(error);
         }

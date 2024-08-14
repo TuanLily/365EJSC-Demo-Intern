@@ -9,6 +9,7 @@
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.16.7",
     "@tanstack/react-query": "^5.51.23",
+    "@tanstack/react-query-devtools": "^5.51.23",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -22,6 +23,8 @@
     "bootstrap": "^5.3.3",
     "dotenv": "^16.4.5",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.52.2",
@@ -56,6 +59,7 @@
     ]
   },
   "devDependencies": {
-    "@tanstack/eslint-plugin-query": "^5.51.15"
+    "@tanstack/eslint-plugin-query": "^5.51.15",
+    "@types/lodash.debounce": "^4.0.9"
   }
 }

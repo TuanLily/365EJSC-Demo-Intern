@@ -3,9 +3,11 @@ import http from "../utils/http";
 import { AxiosResponse } from 'axios';
 
 
-export const getStudents = ({ page, limit }: { page: string, limit: string }) => {
-    return http.get(`/students?page=${page}&limit=${limit}`);
+export const getStudents = ({ page, limit, search }: { page: string, limit: string, search?: string }) => {
+    const query = `/students?page=${page}&limit=${limit}${search ? `&search=${search}` : ''}`;
+    return http.get(query);
 };
+
 export const getStudentById = (id: number | string) => http.get<IStudent>(`students/${id}`);
 
 export const addStudent = (student: Omit<IStudent, 'id'>) => http.post<IStudent>('/students', student);

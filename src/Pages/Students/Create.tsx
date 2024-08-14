@@ -4,15 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { addStudent } from '../../Apis/Student.apis';
 import { toast } from 'react-toastify';
-
-type IStudent = {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    address: string;
-    password: string;
-};
+import { IStudent } from '../../Types/Students.types';
 
 type FormStateType = Omit<IStudent, "id">;
 

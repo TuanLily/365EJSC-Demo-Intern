@@ -3,7 +3,9 @@ const bodyParser = require('body-parser');
 const { sequelize, Student } = require('./models');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const authenticateToken = require('./Middleware/authMiddleware')
+const authenticateToken = require('./Middleware/authMiddleware');
+const { Op } = require('sequelize');
+
 
 const app = express();
 const PORT = 4000;
@@ -38,15 +40,22 @@ app.get('/students', authenticateToken, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const offset = (page - 1) * limit;
+  const search = req.query.search || ''; 
+
 
   try {
     const { count, rows } = await Student.findAndCountAll({
       attributes: ['id', 'first_name', 'last_name', 'email', 'address', 'created_at', 'updated_at'],
+      where: {
+        [Op.or]: [
+          { first_name: { [Op.like]: `%${search}%` } },
+          { last_name: { [Op.like]: `%${search}%` } },
+        ],
+      },
       order: [['id', 'DESC']],
       limit: limit,
       offset: offset
     });
-
     res.json({
       students: rows,
       currentPage: page,

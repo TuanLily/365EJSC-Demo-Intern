@@ -25,28 +25,25 @@ function Login() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const navigate = useNavigate();
-    const { setUser } = useAuth(); // Sử dụng context API
+    const { setUser } = useAuth(); 
 
 
     const mutation = useMutation({
         mutationFn: (data: FormData) => loginAccount(data.email, data.password),
         onMutate: () => {
-            setIsLoading(true); // Bắt đầu hiển thị loading khi bắt đầu gửi yêu cầu
+            setIsLoading(true);
         },
         onSuccess: (data) => {
             console.log(data)
-            setIsLoading(false); // Ẩn loading sau khi yêu cầu thành công
-            // Lưu accessToken vào localStorage
+            setIsLoading(false); 
             localStorage.setItem('accessToken', data.data.accessToken);
 
-            // Lưu thông tin người dùng vào context
             setUser({ email: data.data.user.last_name, token: data.data.accessToken });
 
-            // Điều hướng tới trang danh sách sinh viên sau khi đăng nhập thành công
             navigate('/student/list');
         },
         onError: (error: any) => {
-            setIsLoading(false); // Ẩn loading khi có lỗi
+            setIsLoading(false);
             toast.error(error.response?.data?.message || 'Đăng nhập thất bại!');
         }
     });
