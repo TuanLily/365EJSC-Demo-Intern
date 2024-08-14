@@ -16,3 +16,7 @@ export const updateStudent = (id: string | number, data: Omit<IStudent, 'id'>) =
     return http.patch(`/students/${id}`, data);
 };
 
+
+export const loginAccount = (email: string, password: string) => {
+    return http.post('/login', { email, password });
+};

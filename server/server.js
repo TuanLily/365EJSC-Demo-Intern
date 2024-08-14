@@ -1,7 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { sequelize, Student } = require('./models');
-const cors = require('cors'); // Thêm dòng này
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const authenticateToken = require('./Middleware/authMiddleware')
 
 const app = express();
 const PORT = 4000;
@@ -9,7 +11,18 @@ const DELAY = 3000;
 
 // Middleware
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Nếu bạn cũng xử lý JSON
 app.use(cors());
+
+
+const JWT_SECRET = 'demointernkey1123'; // Đặt secret của bạn ở đây
+
+
+// Sử dụng middleware này cho các route cần bảo vệ
+app.get('/protected', authenticateToken, (req, res) => {
+  res.json({ message: 'This is a protected route', user: req.user });
+});
 
 // Kiểm tra email
 const validateEmail = (email) => {
@@ -21,7 +34,7 @@ const validateEmail = (email) => {
 };
 
 // Routes
-app.get('/students', async (req, res) => {
+app.get('/students', authenticateToken, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const offset = (page - 1) * limit;
@@ -46,7 +59,7 @@ app.get('/students', async (req, res) => {
 
 
 // Lấy thông tin sinh viên theo ID
-app.get('/students/:id', async (req, res) => {
+app.get('/students/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -65,7 +78,7 @@ app.get('/students/:id', async (req, res) => {
 });
 
 
-app.post('/students', async (req, res) => {
+app.post('/students', authenticateToken, async (req, res) => {
   const { first_name, last_name, email, address, password } = req.body;
 
   // Kiểm tra định dạng email
@@ -105,7 +118,7 @@ app.post('/students', async (req, res) => {
   }
 });
 
-app.patch('/students/:id', async (req, res) => {
+app.patch('/students/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { first_name, last_name, email, address, password } = req.body;
 
@@ -130,7 +143,7 @@ app.patch('/students/:id', async (req, res) => {
   }
 });
 
-app.delete('/students/:id', async (req, res) => {
+app.delete('/students/:id', authenticateToken, async (req, res) => {
   const { id } = req.params; // Lấy ID từ URL
 
   // Chuyển đổi ID từ string thành number nếu ID là kiểu số trong cơ sở dữ liệu
@@ -156,6 +169,36 @@ app.delete('/students/:id', async (req, res) => {
   }
 });
 
+app.post('/login', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Kiểm tra email và mật khẩu
+    const user = await Student.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Email or password is incorrect' });
+    }
+
+    // Tạo token JWT
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    return res.json({
+      message: "Đăng nhập thành công!",
+      accessToken: token,
+      user: {
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // Kết nối với cơ sở dữ liệu và khởi động server
 sequelize.sync().then(() => {

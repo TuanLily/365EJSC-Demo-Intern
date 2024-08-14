@@ -16,6 +16,7 @@ import { ToastContainer } from 'react-toastify';
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import queryClient from './Config/QueryClient';
+import { AuthProvider } from './Context/AuthContext';
 
 
 const root = ReactDOM.createRoot(
@@ -25,7 +26,9 @@ root.render(
   <React.StrictMode>
     <Router>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
         <ToastContainer />
       </QueryClientProvider>
     </Router>
